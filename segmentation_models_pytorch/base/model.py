@@ -21,7 +21,7 @@ class SegmentationModel(torch.nn.Module):
             labels = self.classification_head(features[-1])
             return masks, labels
 
-        return masks if not return_encoder else masks, features
+        return masks if not return_encoder else masks, features[-1]
 
     def predict(self, x):
         """Inference method. Switch model to `eval` mode, call `.forward(x)` with `torch.no_grad()`
