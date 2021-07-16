@@ -24,6 +24,7 @@ def create_model(
     encoder_weights: Optional[str] = "imagenet",
     in_channels: int = 3,
     classes: int = 1,
+    image_size = 128,
     **kwargs,
 ) -> torch.nn.Module:
     """Models wrapper. Allows to create any model just with parametes
@@ -38,6 +39,15 @@ def create_model(
         raise KeyError("Wrong architecture type `{}`. Available options are: {}".format(
             arch, list(archs_dict.keys()),
         ))
+    if model_class in [TransUnet]:
+        return model_class(
+                            encoder_name=encoder_name,
+                            encoder_weights=encoder_weights,
+                            in_channels=in_channels,
+                            classes=classes,
+                            image_size = image_size,
+                            **kwargs,
+                        )
     return model_class(
         encoder_name=encoder_name,
         encoder_weights=encoder_weights,

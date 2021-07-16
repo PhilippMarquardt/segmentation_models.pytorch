@@ -59,9 +59,9 @@ class TransUnet(SegmentationModel):
         classes: int = 1,
         activation: Optional[Union[str, callable]] = None,
         aux_params: Optional[dict] = None,
+        image_size = 128
     ):
         super().__init__()
-
         self.encoder = get_encoder(
             encoder_name,
             in_channels=in_channels,

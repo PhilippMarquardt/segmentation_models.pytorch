@@ -98,7 +98,7 @@ class TransUnetDecoder(nn.Module):
             self.center = nn.Identity()
 
         self.trans = ViT(
-            image_size = 32,
+            image_size = 2**n_blocks,
             patch_size = 1,
             dim = head_channels,
             depth = 6,
