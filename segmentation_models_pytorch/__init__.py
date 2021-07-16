@@ -7,7 +7,7 @@ from .pspnet import PSPNet
 from .deeplabv3 import DeepLabV3, DeepLabV3Plus
 from .pan import PAN
 from .transunet import TransUnet
-
+from .axialunet import AxialUnet
 from . import encoders
 from . import utils
 from . import losses
@@ -39,7 +39,7 @@ def create_model(
         raise KeyError("Wrong architecture type `{}`. Available options are: {}".format(
             arch, list(archs_dict.keys()),
         ))
-    if model_class in [TransUnet]:
+    if model_class in [TransUnet, AxialUnet]:
         return model_class(
                             encoder_name=encoder_name,
                             encoder_weights=encoder_weights,

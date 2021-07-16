@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .vit import ViT
+from .axial import AxialImageTransformer
 from ..base import modules as md
-
+from ..transunet.vit import ViT
 
 class DecoderBlock(nn.Module):
     def __init__(
@@ -13,8 +13,10 @@ class DecoderBlock(nn.Module):
             out_channels,
             use_batchnorm=True,
             attention_type=None,
+            image_size = 128
     ):
         super().__init__()
+        self.axial = AxialImageTransformer(dim = in_channels + skip_channels, depth = 4,axial_pos_emb_shape = (image_size,image_size))
         self.conv1 = md.Conv2dReLU(
             in_channels + skip_channels,
             out_channels,
@@ -37,6 +39,7 @@ class DecoderBlock(nn.Module):
         if skip is not None:
             x = torch.cat([x, skip], dim=1)
             x = self.attention1(x)
+        x = self.axial(x)
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.attention2(x)
@@ -62,7 +65,7 @@ class CenterBlock(nn.Sequential):
         super().__init__(conv1, conv2)
 
 
-class TransUnetDecoder(nn.Module):
+class AxialUnetDecoder(nn.Module):
     def __init__(
             self,
             encoder_channels,
@@ -91,6 +94,7 @@ class TransUnetDecoder(nn.Module):
         out_channels = decoder_channels
 
 
+
         self.trans = ViT(
             image_size = int(image_size / (2**(n_blocks - 1))),
             patch_size = 1,
@@ -105,8 +109,8 @@ class TransUnetDecoder(nn.Module):
         # combine decoder keyword arguments
         kwargs = dict(use_batchnorm=use_batchnorm, attention_type=attention_type)
         blocks = [
-            DecoderBlock(in_ch, skip_ch, out_ch, **kwargs)
-            for in_ch, skip_ch, out_ch in zip(in_channels, skip_channels, out_channels)
+            DecoderBlock(in_ch, skip_ch, out_ch, image_size=int(image_size / (2**(n_blocks - 1 - cnt + 1))), **kwargs)
+            for cnt, (in_ch, skip_ch, out_ch) in enumerate(zip(in_channels, skip_channels, out_channels))
         ]
         self.blocks = nn.ModuleList(blocks)
 
