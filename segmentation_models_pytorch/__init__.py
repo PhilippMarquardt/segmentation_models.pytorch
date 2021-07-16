@@ -31,7 +31,7 @@ def create_model(
 
     """
 
-    archs = [Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, DeepLabV3, DeepLabV3Plus, PAN, TransUnet]
+    archs = [Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, DeepLabV3, DeepLabV3Plus, PAN, TransUnet, AxialUnet]
     archs_dict = {a.__name__.lower(): a for a in archs}
     try:
         model_class = archs_dict[arch.lower()]
