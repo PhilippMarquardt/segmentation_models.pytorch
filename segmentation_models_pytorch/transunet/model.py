@@ -61,6 +61,7 @@ class TransUnet(SegmentationModel):
         aux_params: Optional[dict] = None,
         image_size = 128
     ):
+        
         super().__init__()
         self.encoder = get_encoder(
             encoder_name,
@@ -76,6 +77,7 @@ class TransUnet(SegmentationModel):
             use_batchnorm=decoder_use_batchnorm,
             center=True if encoder_name.startswith("vgg") else False,
             attention_type=decoder_attention_type,
+            image_size = image_size
         )
 
         self.segmentation_head = SegmentationHead(

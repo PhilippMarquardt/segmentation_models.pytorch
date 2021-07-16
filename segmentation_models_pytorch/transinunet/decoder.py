@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from .vit import ViT
+from .vit import TNT
 from ..base import modules as md
 
 
@@ -62,7 +62,7 @@ class CenterBlock(nn.Sequential):
         super().__init__(conv1, conv2)
 
 
-class TransUnetDecoder(nn.Module):
+class TransInUnetDecoder(nn.Module):
     def __init__(
             self,
             encoder_channels,
@@ -74,6 +74,7 @@ class TransUnetDecoder(nn.Module):
             image_size = 128
     ):
         super().__init__()
+
         if n_blocks != len(decoder_channels):
             raise ValueError(
                 "Model depth is {}, but you provide `decoder_channels` for {} blocks.".format(
@@ -98,7 +99,7 @@ class TransUnetDecoder(nn.Module):
             self.center = nn.Identity()
 
         self.trans = ViT(
-            image_size = int(image_size / (2**(n_blocks - 1))),
+            image_size = 2**n_blocks,
             patch_size = 1,
             dim = head_channels,
             depth = 6,
@@ -120,6 +121,7 @@ class TransUnetDecoder(nn.Module):
 
         features = features[1:]    # remove first skip with same spatial resolution
         features = features[::-1]  # reverse channels to start from head of encoder
+
         head = self.trans(features[0])
         skips = features[1:]
 
