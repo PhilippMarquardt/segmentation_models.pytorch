@@ -8,6 +8,7 @@ from .deeplabv3 import DeepLabV3, DeepLabV3Plus
 from .pan import PAN
 from .transunet import TransUnet
 from .axialunet import AxialUnet
+from .fullaxialunet import FullAxialUnet
 from . import encoders
 from . import utils
 from . import losses
@@ -31,7 +32,7 @@ def create_model(
 
     """
 
-    archs = [Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, DeepLabV3, DeepLabV3Plus, PAN, TransUnet, AxialUnet]
+    archs = [Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, DeepLabV3, DeepLabV3Plus, PAN, TransUnet, AxialUnet, FullAxialUnet]
     archs_dict = {a.__name__.lower(): a for a in archs}
     try:
         model_class = archs_dict[arch.lower()]
@@ -39,7 +40,7 @@ def create_model(
         raise KeyError("Wrong architecture type `{}`. Available options are: {}".format(
             arch, list(archs_dict.keys()),
         ))
-    if model_class in [TransUnet, AxialUnet]:
+    if model_class in [TransUnet, AxialUnet, FullAxialUnet]:
         return model_class(
                             encoder_name=encoder_name,
                             encoder_weights=encoder_weights,
