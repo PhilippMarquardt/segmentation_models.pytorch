@@ -16,7 +16,9 @@ class DecoderBlock(nn.Module):
             image_size = 128
     ):
         super().__init__()
-        self.axial = AxialImageTransformer(dim = in_channels + skip_channels, depth = 4,axial_pos_emb_shape = (image_size,image_size))
+        self.image_size = image_size
+        self.axial = AxialImageTransformer(dim = out_channels, depth = 4,axial_pos_emb_shape = (image_size,image_size), heads=8)
+
         self.conv1 = md.Conv2dReLU(
             in_channels + skip_channels,
             out_channels,
@@ -39,10 +41,12 @@ class DecoderBlock(nn.Module):
         if skip is not None:
             x = torch.cat([x, skip], dim=1)
             x = self.attention1(x)
-        x = self.axial(x)
+
+            
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.attention2(x)
+        x = self.axial(x)
         return x
 
 
@@ -76,6 +80,7 @@ class AxialUnetDecoder(nn.Module):
             center=False,
             image_size = 128
     ):
+        
         super().__init__()
         if n_blocks != len(decoder_channels):
             raise ValueError(
@@ -83,7 +88,7 @@ class AxialUnetDecoder(nn.Module):
                     n_blocks, len(decoder_channels)
                 )
             )
-
+        
         encoder_channels = encoder_channels[1:]  # remove first skip with same spatial resolution
         encoder_channels = encoder_channels[::-1]  # reverse channels to start from head of encoder
 
@@ -95,21 +100,21 @@ class AxialUnetDecoder(nn.Module):
 
 
 
-        self.trans = ViT(
-            image_size = int(image_size / (2**(n_blocks - 1))),
-            patch_size = 1,
-            dim = head_channels,
-            depth = 6,
-            heads = 12,
-            mlp_dim = 2048,
-            dropout = 0.1,
-            emb_dropout = 0.1,
-            channels = head_channels
-        )
+        # self.trans = ViT(
+        #     image_size = int(image_size / (2**(n_blocks - 1))),
+        #     patch_size = 1,
+        #     dim = head_channels,
+        #     depth = 6,
+        #     heads = 12,
+        #     mlp_dim = 2048,
+        #     dropout = 0.1,
+        #     emb_dropout = 0.1,
+        #     channels = head_channels
+        # )
         # combine decoder keyword arguments
         kwargs = dict(use_batchnorm=use_batchnorm, attention_type=attention_type)
         blocks = [
-            DecoderBlock(in_ch, skip_ch, out_ch, image_size=int(image_size / (2**(n_blocks - 1 - cnt + 1))), **kwargs)
+            DecoderBlock(in_ch, skip_ch, out_ch, image_size=int(image_size / (2**(n_blocks - 1 - cnt))), **kwargs)
             for cnt, (in_ch, skip_ch, out_ch) in enumerate(zip(in_channels, skip_channels, out_channels))
         ]
         self.blocks = nn.ModuleList(blocks)
@@ -118,9 +123,10 @@ class AxialUnetDecoder(nn.Module):
 
         features = features[1:]    # remove first skip with same spatial resolution
         features = features[::-1]  # reverse channels to start from head of encoder
-        head = self.trans(features[0])
+        #head = self.trans(features[0])
+        head = features[0]
         skips = features[1:]
-
+        x = head
         for i, decoder_block in enumerate(self.blocks):
             skip = skips[i] if i < len(skips) else None
             x = decoder_block(x, skip)

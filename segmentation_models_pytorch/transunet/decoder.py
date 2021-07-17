@@ -74,6 +74,7 @@ class TransUnetDecoder(nn.Module):
             image_size = 128
     ):
         super().__init__()
+        print("XD")
         if n_blocks != len(decoder_channels):
             raise ValueError(
                 "Model depth is {}, but you provide `decoder_channels` for {} blocks.".format(
@@ -89,13 +90,19 @@ class TransUnetDecoder(nn.Module):
         in_channels = [head_channels] + list(decoder_channels[:-1])
         skip_channels = list(encoder_channels[1:]) + [0]
         out_channels = decoder_channels
-
+        center = False
+        if center:
+            self.center = CenterBlock(
+                head_channels, head_channels, use_batchnorm=use_batchnorm
+            )
+        else:
+            self.center = nn.Identity()
 
         self.trans = ViT(
             image_size = int(image_size / (2**(n_blocks - 1))),
             patch_size = 1,
             dim = head_channels,
-            depth = 6,
+            depth = 8,
             heads = 12,
             mlp_dim = 2048,
             dropout = 0.1,
@@ -117,6 +124,7 @@ class TransUnetDecoder(nn.Module):
         head = self.trans(features[0])
         skips = features[1:]
 
+        x = self.center(head)
         for i, decoder_block in enumerate(self.blocks):
             skip = skips[i] if i < len(skips) else None
             x = decoder_block(x, skip)
