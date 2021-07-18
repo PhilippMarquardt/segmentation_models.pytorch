@@ -114,7 +114,7 @@ class AxialUnetDecoder(nn.Module):
         # combine decoder keyword arguments
         kwargs = dict(use_batchnorm=use_batchnorm, attention_type=attention_type)
         blocks = [
-            DecoderBlock(in_ch, skip_ch, out_ch, image_size=int(image_size / (2**(n_blocks - 1 - cnt))), **kwargs)
+            DecoderBlock(in_ch, skip_ch, out_ch, image_size=int(image_size / (2**(n_blocks - (cnt + 1)))), **kwargs)
             for cnt, (in_ch, skip_ch, out_ch) in enumerate(zip(in_channels, skip_channels, out_channels))
         ]
         self.blocks = nn.ModuleList(blocks)

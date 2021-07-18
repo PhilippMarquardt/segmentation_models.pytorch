@@ -22,7 +22,7 @@ class SegmentationModel(torch.nn.Module):
             return masks, labels
         if return_encoder == False:
             return masks
-        return masks, features[-1]
+        return masks if return_encoder == False else  masks, features[-1]
 
 
     def predict(self, x):
