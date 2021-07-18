@@ -18,8 +18,8 @@ class DecoderBlock(nn.Module):
         super().__init__()
         self.image_size = image_size
         self.stemmer = md.Conv2dReLU(in_channels+skip_channels, out_channels, 1)
-        self.axial = AxialImageTransformer(dim = out_channels, depth = 4,axial_pos_emb_shape = (image_size,image_size), heads=8)
-        self.axial2 = AxialImageTransformer(dim = out_channels, depth = 4,axial_pos_emb_shape = (image_size,image_size), heads=8)
+        self.axial = AxialImageTransformer(dim = out_channels, depth = 2,axial_pos_emb_shape = (image_size,image_size), heads=2)
+        self.axial2 = AxialImageTransformer(dim = out_channels, depth = 2,axial_pos_emb_shape = (image_size,image_size), heads=2)
         
 
     def forward(self, x, skip=None):
@@ -86,8 +86,8 @@ class FullAxialUnetDecoder(nn.Module):
         #     image_size = int(image_size / (2**(n_blocks - 1))),
         #     patch_size = 1,
         #     dim = head_channels,
-        #     depth = 6,
-        #     heads = 12,
+        #     depth = 4,
+        #     heads = 8,
         #     mlp_dim = 2048,
         #     dropout = 0.1,
         #     emb_dropout = 0.1,
@@ -96,7 +96,7 @@ class FullAxialUnetDecoder(nn.Module):
         # combine decoder keyword arguments
         kwargs = dict(use_batchnorm=use_batchnorm, attention_type=attention_type)
         blocks = [
-            DecoderBlock(in_ch, skip_ch, out_ch, image_size=int(image_size / (2**(n_blocks - 1 - cnt))), **kwargs)
+            DecoderBlock(in_ch, skip_ch, out_ch, image_size=int(image_size / (2**(n_blocks - (cnt + 1)))), **kwargs)
             for cnt, (in_ch, skip_ch, out_ch) in enumerate(zip(in_channels, skip_channels, out_channels))
         ]
         self.blocks = nn.ModuleList(blocks)
