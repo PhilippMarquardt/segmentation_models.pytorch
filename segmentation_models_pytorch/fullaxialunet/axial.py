@@ -231,8 +231,8 @@ class AxialPositionalEmbedding(nn.Module):
         self.params = nn.ParameterList(parameters)
 
     def forward(self, x):
-        for param in self.params:
-            x = x + param
+        for cnt, param in enumerate(self.params):
+            x = x + param[([slice(None)] * (cnt + 2) + [slice(x.shape[cnt + 2])])]
         return x
 
 # attention
@@ -268,13 +268,13 @@ class SelfAttention(nn.Module):
 # axial attention class
 
 class AxialAttention(nn.Module):
-    def __init__(self, dim, num_dimensions = 2, heads = 8, dim_heads = None, dim_index = -1, sum_axial_out = True):
+    def __init__(self, dim, num_dimensions = 2, heads = 8, dim_heads = None, dim_index = -1, sum_axial_out = True, axial_pos_emb_shape = None):
         assert (dim % heads) == 0, 'hidden dimension must be divisible by number of heads'
         super().__init__()
         self.dim = dim
         self.total_dimensions = num_dimensions + 2
         self.dim_index = dim_index if dim_index > 0 else (dim_index + self.total_dimensions)
-
+        self.pos_emb = AxialPositionalEmbedding(dim, axial_pos_emb_shape, dim_index) if exists(axial_pos_emb_shape) else nn.Identity()
         attentions = []
         for permutation in calculate_permutations(num_dimensions, dim_index):
             attentions.append(PermuteToFrom(permutation, SelfAttention(dim, heads, dim_heads)))
@@ -285,7 +285,7 @@ class AxialAttention(nn.Module):
     def forward(self, x):
         assert len(x.shape) == self.total_dimensions, 'input tensor does not have the correct number of dimensions'
         assert x.shape[self.dim_index] == self.dim, 'input tensor does not have the correct input dimension'
-
+        x = self.pos_emb(x)
         if self.sum_axial_out:
             return sum(map(lambda axial_attn: axial_attn(x), self.axial_attentions))
 

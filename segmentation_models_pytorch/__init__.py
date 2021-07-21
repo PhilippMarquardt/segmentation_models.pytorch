@@ -9,6 +9,9 @@ from .pan import PAN
 from .transunet import TransUnet
 from .axialunet import AxialUnet
 from .fullaxialunet import FullAxialUnet
+from .uacanet import UACANet
+from .efficientunetplusplus import EfficientUnetPlusPlus
+from .resunet import ResUnet
 from . import encoders
 from . import utils
 from . import losses
@@ -32,7 +35,7 @@ def create_model(
 
     """
 
-    archs = [Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, DeepLabV3, DeepLabV3Plus, PAN, TransUnet, AxialUnet, FullAxialUnet]
+    archs = [Unet, UnetPlusPlus, MAnet, Linknet, FPN, PSPNet, DeepLabV3, DeepLabV3Plus, PAN, TransUnet, AxialUnet, FullAxialUnet, UACANet, EfficientUnetPlusPlus, ResUnet]
     archs_dict = {a.__name__.lower(): a for a in archs}
     try:
         model_class = archs_dict[arch.lower()]

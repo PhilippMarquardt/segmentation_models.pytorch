@@ -20,9 +20,9 @@ class SegmentationModel(torch.nn.Module):
         if self.classification_head is not None:
             labels = self.classification_head(features[-1])
             return masks, labels
-        if return_encoder == False:
-            return masks
-        return masks if return_encoder == False else  masks, features[-1]
+
+        return masks if not return_encoder else (masks, features[-1])
+
 
 
     def predict(self, x):
